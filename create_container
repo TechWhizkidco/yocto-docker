@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Container configuration
+CONTAINER_NAME="yocto-builder-$(id -u)"
+IMAGE_NAME="yocto-build-env-ub22:1.0"
+HOST_WORK_DIR="$HOME/yocto-workspace"
+CONTAINER_WORK_DIR="/workdir"
+
+# Create host work directory if it doesn't exist
+mkdir -p ${HOST_WORK_DIR}
+
+# Check if container already exists
+if docker ps -a | grep -q ${CONTAINER_NAME}; then
+    echo "Container ${CONTAINER_NAME} already exists. Removing it..."
+    docker rm -f ${CONTAINER_NAME}
+fi
+
+# Run container, use after free
+docker run -it --rm \
+    --name ${CONTAINER_NAME} \
+    --user `id -u`:`id -g` \
+    --device=/dev/kvm:/devb/kvm \
+    --device=/dev/net/tun:/dev/net/tun \
+    --privileged \
+    --env="DISPLAY" \
+    -v ${HOST_WORK_DIR}:${CONTAINER_WORK_DIR} \
+    -v ${HOME}:${HOME} \
+    -v /etc/group:/etc/group \
+    -v /etc/passwd:/etc/passwd \
+    -v /etc/shadow:/etc/shadow \
+    -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    ${IMAGE_NAME}
+
+# Check exit status1
+if [ $? -ne 0 ]; then
+    echo "Failed to start container"
+    exit 1
+fi

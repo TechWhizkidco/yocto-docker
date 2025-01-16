@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Docker image details
+IMAGE_NAME="yocto-build-env-ub22"
+TAG="1.0"
+
+# Print build start message
+echo "Starting to build Docker image: ${IMAGE_NAME}:${TAG}"
+
+# Build Docker image
+if docker build -t ${IMAGE_NAME}:${TAG} .; then
+    echo "Successfully built Docker image: ${IMAGE_NAME}:${TAG}"
+else
+    echo "Failed to build Docker image"
+    exit 1
+fi
