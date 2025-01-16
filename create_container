@@ -17,18 +17,17 @@ fi
 
 # Run container, use after free
 docker run -it --rm \
-    --name ${CONTAINER_NAME} \
-    --user `id -u`:`id -g` \
+    --privileged \
     --device=/dev/kvm:/devb/kvm \
     --device=/dev/net/tun:/dev/net/tun \
-    --privileged \
     --env="DISPLAY" \
+    --env=HOST_USER=${USER} \
+    --env=HOST_UID=$(id -u) \
+    --env=HOST_GID=$(id -g) \
+    -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     -v ${HOST_WORK_DIR}:${CONTAINER_WORK_DIR} \
     -v ${HOME}:${HOME} \
-    -v /etc/group:/etc/group \
-    -v /etc/passwd:/etc/passwd \
-    -v /etc/shadow:/etc/shadow \
-    -v="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    --name ${CONTAINER_NAME} \
     ${IMAGE_NAME}
 
 # Check exit status1
